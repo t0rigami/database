@@ -1,12 +1,12 @@
 #include "ServerSocketManager.h"
 
 ServerSocketManager::ServerSocketManager()
-    : currentProcessId(getpid()),
-      currentProcessName("Main"),
-      conigRef(nullptr){};
+        : currentProcessId(getpid()),
+          currentProcessName("Main"),
+          configRef(nullptr) {};
 
-ServerSocketManager::ServerSocketManager(const DatabaseConfig& config) {
-    conigRef = &config;
+ServerSocketManager::ServerSocketManager(const DatabaseConfig &config) {
+    configRef = &config;
 
     serverSocket = ServerSocket(config.getPort());
 
@@ -19,7 +19,7 @@ int ServerSocketManager::start() {
     while (true) {
         try {
             Socket client = serverSocket.accept();
-            currentProcessName = conigRef->getServerSocketManagerName();
+            currentProcessName = configRef->getServerSocketManagerName();
 
             std::cout << "Main[" << currentProcessId << "] > "
                       << "accept a client[" << client.getSocketFd() << "] .."
@@ -27,19 +27,19 @@ int ServerSocketManager::start() {
 
             forkSubProcess(client);
 
-        } catch (const std::exception& e) {
+        } catch (const std::exception &e) {
             std::cerr << e.what() << std::endl;
         }
     }
 }
 
-void ServerSocketManager::setCurrentProcessInfo(const pid_t& pid,
-                                                const std::string& name) {
+void ServerSocketManager::setCurrentProcessInfo(const pid_t &pid,
+                                                const std::string &name) {
     currentProcessId = pid;
     currentProcessName = name;
 }
 
-void ServerSocketManager::forkSubProcess(const Socket& clientSocket) {
+void ServerSocketManager::forkSubProcess(const Socket &clientSocket) {
     pid_t subProcessPid = fork();
 
     // 创建失败
@@ -47,7 +47,7 @@ void ServerSocketManager::forkSubProcess(const Socket& clientSocket) {
         throw std::runtime_error("fork sub process failed");
     else if (subProcessPid == 0) {
         // 设置子进程信息
-        setCurrentProcessInfo(getpid(), conigRef->getServerSocketSubName());
+        setCurrentProcessInfo(getpid(), configRef->getServerSocketSubName());
 
         // 子进程
         while (true) {
@@ -82,7 +82,7 @@ void ServerSocketManager::forkSubProcess(const Socket& clientSocket) {
         }
     } else {
         // 父进程
-        currentProcessName = conigRef->getServerSocketManagerName();
+        currentProcessName = configRef->getServerSocketManagerName();
 
         std::cout << "Main[" << currentProcessId << "] > "
                   << "fork success, pid = " << subProcessPid << std::endl;

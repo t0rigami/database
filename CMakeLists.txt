@@ -1,10 +1,10 @@
 ﻿PROJECT(db_server)
 
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required(VERSION 3.8)
 
 # 添加 pthread 库
 SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -pthread")
-find_package (Threads)
+find_package(Threads)
 
 # 头文件
 include_directories(src/include)
@@ -46,6 +46,10 @@ aux_source_directory(src/process PROCESS_SOURCE_DIR)
 include_directories(src/include/io)
 aux_source_directory(src/io IO_SOURCE_DIR)
 
+# SQL 源文件目录
+include_directories(src/include/sql)
+aux_source_directory(src/sql SQL_SOURCE_DIR)
+
 # Client 源文件
 aux_source_directory(src/client CLIENT_SOURCE_DIR)
 
@@ -54,10 +58,11 @@ aux_source_directory(src/test TEST_SOURCE_DIR)
 
 aux_source_directory(src TOTAL_SOURCE_DIR)
 
-add_executable (db_server ${MAIN_SOURCE_DIR} ${UTIL_SOURCE_DIR} ${ACCESS_SOURCE_DIR}
- ${CONF_SOURCE_DIR} ${COMPONENT_SOURCE_DIR} ${NET_SOURCE_DIR} ${PROCESS_SOURCE_DIR} 
- ${THREAD_SOURCE_DIR} ${TEST_SOURCE_DIR} ${TABLE_SOURCE_DIR} ${IO_SOURCE_DIR} ${COLLECTION_SOURCE_DIR})
+add_executable(db_server ${MAIN_SOURCE_DIR} ${UTIL_SOURCE_DIR} ${ACCESS_SOURCE_DIR}
+        ${CONF_SOURCE_DIR} ${COMPONENT_SOURCE_DIR} ${NET_SOURCE_DIR} ${PROCESS_SOURCE_DIR}
+        ${THREAD_SOURCE_DIR} ${TEST_SOURCE_DIR} ${TABLE_SOURCE_DIR} ${IO_SOURCE_DIR} ${COLLECTION_SOURCE_DIR}
+        ${SQL_SOURCE_DIR})
 
 # add_executable (db_client ${CLIENT_SOURCE_DIR} ${UTIL_SOURCE_DIR} ${NET_SOURCE_DIR})
 
-target_link_libraries (db_server ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(db_server ${CMAKE_THREAD_LIBS_INIT})

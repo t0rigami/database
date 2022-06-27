@@ -291,8 +291,15 @@ TablePtr Table::loadClass(const std::string &classPath) {
 
 //    printf("PageSize: %d\n", classTable->getPageSize());
     // 加载所有的表信息
-    for (int i = 0; i < classTable->getPageSize(); i++)
+    for (int i = 0; i < classTable->getPageSize(); ++i)
         classTable->loadPage(i);
+    // 将表信息加入到 tables 中
+    for (int i = 0; i < classTable->getPageSize(); ++i) {
+        PagePtr page = classTable->getPage(i);
+        for (const auto &item: page->getTuples()) {
+            item.printFormat(classTable->getColumns(), classTable->size);
+        }
+    }
     // 返回
     return classTable;
 }

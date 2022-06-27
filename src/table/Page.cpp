@@ -27,12 +27,12 @@ bool Page::append(TupleData tupleData) {
     if (!isRemain(tupleData)) return false;
     this->tuples.push_back(tupleData);
     pageHeader.lower += Item::ITEM_SIZE;
-    pageHeader.upper -= tupleData.getTotalSize();
+    pageHeader.upper -= (int) tupleData.getTotalSize();
     return true;
 }
 
 void Page::remove(size_t index) {
-    this->tuples.erase(tuples.begin() + index);
+    this->tuples.erase(tuples.begin() + (int) index);
 }
 
 void Page::removeAndRetire(size_t index) {
@@ -45,7 +45,7 @@ bool Page::hasStates(int32_t states) const {
     return state & states;
 }
 
-void Page::writerTo(ByteWriter &bw) {
+void Page::writerTo(ByteWriter &bw) const {
     byte_array bytes = serialize();
     bw.writeBytes(bytes);
     MallocUtils::retire(bytes);
@@ -70,8 +70,7 @@ byte_array Page::serialize() const {
             offset -= tupleSize;
             _WRITE_BASIC_VALUES(offset);
             _WRITE_BASIC_VALUES(tupleSize);
-
-            printf("Item[%d]{offset=%ld, size=%ld}\n", offset, tupleSize);
+//            printf("Item[%d]{offset=%ld, size=%ld}\n", offset, tupleSize);
         }
         // 将 bw 的 buffer _offset 移动到 _offset
         bw.setOffset(offset);
@@ -118,24 +117,24 @@ Page::Page(const byte_array &bytes, ColumnPtr *columns, int size) {
         byte_array b{bytes.value + item->offset, static_cast<size_t>(item->size)};
         BufferReader reader(b);
 
-        printf("Item Size = %ld\n", b.size);
+//        printf("Item Size = %ld\n", b.size);
 
         TupleData::Builder builder;
 
         for (int j = 0; j < size; j++) {
-            printf("start offset=%ld\n", reader.getOffset());
+//            printf("start offset=%ld\n", reader.getOffset());
             switch (columns[j]->type) {
                 case INT: {
-                    size_t dataSize = reader.readULong();
-                    printf("read dataSize[%d]=%ld\n", j, dataSize);
+                    reader.readULong();
+//                    printf("read dataSize[%d]=%ld\n", j, dataSize);
                     int num = reader.readInt();
-                    printf("num = %d ", num);
+//                    printf("num = %d ", num);
                     builder.addInt(num);
                 }
                     break;
                 case CHAR: {
-                    size_t dataSize = reader.readULong();
-                    printf("read dataSize[%d]=%ld\n", j, dataSize);
+                    reader.readULong();
+//                    printf("read dataSize[%d]=%ld\n", j, dataSize);
                     char ch = reader.readChar();
                     printf("ch = %c ", ch);
                     builder.addChar(ch);
@@ -143,15 +142,15 @@ Page::Page(const byte_array &bytes, ColumnPtr *columns, int size) {
                     break;
                 case VARCHAR: {
                     std::string s = reader.readString();
-                    printf("s = %s ", s.c_str());
+//                    printf("s = %s ", s.c_str());
                     builder.addString(s);
                 }
                     break;
                 default:
                     Assert::isTrue(false, "not match this type!");
             }
-            printf("\nend offset=%ld\n", reader.getOffset());
-            puts("======>");
+//            printf("\nend offset=%ld\n", reader.getOffset());
+//            puts("======>");
         }
 
         this->tuples.push_back(*builder.build());

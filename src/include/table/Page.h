@@ -62,7 +62,7 @@ public:
 
     bool hasStates(int32_t states) const;
 
-    void writerTo(ByteWriter &bw);
+    void writerTo(ByteWriter &bw) const;
 
     byte_array serialize() const override;
 

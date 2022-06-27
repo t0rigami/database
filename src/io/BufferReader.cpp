@@ -56,7 +56,7 @@ char BufferReader::readChar() {
 
 std::string BufferReader::readString() {
     size_t refSize = _REF_SIZE;
-    printf("refSize = %ld\n", refSize);
+//    printf("refSize = %ld\n", refSize);
     auto str = (char *) MallocUtils::mallocAndCopy(_buf + _offset, refSize);
     std::string res = std::string(str);
     MallocUtils::retire(str);

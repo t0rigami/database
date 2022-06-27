@@ -6,6 +6,7 @@
 #include "DatabaseConfig.h"
 #include "ServerSocketManager.h"
 #include "Table.h"
+#include "SqlExecutor.h"
 
 #define HDB_LOG_TRACE
 
@@ -37,6 +38,11 @@ public:
     void initTable();
 
     /**
+     * 初始化 SQL 执行器
+     */
+    void initSqlExecutor();
+
+    /**
      * @brief 开启服务
      *
      */
@@ -59,6 +65,10 @@ private:
      * 数据库表管理
      */
     std::unordered_map<int32_t, TablePtr> tables;
+    /**
+     * Sql
+     */
+    SqlExecutor sqlExecutor;
 };
 
 #endif  // HDB_DATABASE_CONTEXT_H

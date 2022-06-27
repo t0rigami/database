@@ -11,9 +11,10 @@
  *
  */
 class ServerSocketManager {
-   public:
+public:
     explicit ServerSocketManager();
-    explicit ServerSocketManager(const DatabaseConfig& config);
+
+    explicit ServerSocketManager(const DatabaseConfig &config);
 
     /**
      * @brief 开始服务
@@ -22,13 +23,13 @@ class ServerSocketManager {
      */
     int start();
 
-   private:
+private:
     /**
      * @brief fork 一个子进程服务
      *
      * @return 子进程 pid_t
      */
-    void forkSubProcess(const Socket& clientSocket);
+    void forkSubProcess(const Socket &clientSocket);
 
     /**
      * @brief 设置当前进程的一些信息
@@ -36,10 +37,10 @@ class ServerSocketManager {
      * @param pid pid
      * @param name 标识符
      */
-    inline void setCurrentProcessInfo(const pid_t& pid,
-                                      const std::string& name);
+    inline void setCurrentProcessInfo(const pid_t &pid,
+                                      const std::string &name);
 
-    DatabaseConfig const* conigRef;
+    DatabaseConfig const *configRef;
 
     ServerSocket serverSocket;
     std::unordered_set<pid_t> backendPidList;

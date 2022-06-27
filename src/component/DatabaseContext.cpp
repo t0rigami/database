@@ -55,9 +55,6 @@ void DatabaseContext::initTable() {
 
         pgAttributeTable = Table::buildAttributeTable(pgAttributePagePath);
 
-//        pgClassTable->saveTableStruct(pgClassTablePath);
-//        pgAttributeTable->saveTableStruct(pgAttributeTablePath);
-
         // 将 pg_class 和 pg_attribute 表信息插入到 pg_class 中
 
         // 将两张表的信息插入到 pg_class 表中
@@ -107,4 +104,8 @@ bool DatabaseContext::registerTable(TablePtr table) {
 
 const std::unordered_map<int32_t, TablePtr> &DatabaseContext::getTables() const {
     return tables;
+}
+
+void DatabaseContext::initSqlExecutor() {
+    this->sqlExecutor.setContext(this);
 }
