@@ -3,7 +3,7 @@
 ServerSocketManager::ServerSocketManager()
         : currentProcessId(getpid()),
           currentProcessName("Main"),
-          configRef(nullptr) {};
+          configRef(nullptr) {}
 
 ServerSocketManager::ServerSocketManager(const DatabaseConfig &config) {
     configRef = &config;
@@ -76,7 +76,6 @@ void ServerSocketManager::forkSubProcess(const Socket &clientSocket) {
 
                     // 父进程信息删除
                     exit(0);
-                    break;
                 }
             }
         }

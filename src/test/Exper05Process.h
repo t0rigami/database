@@ -3,13 +3,15 @@
 
 #include "ForkProcess.h"
 #include "Semaphore.h"
+
 // 废弃
 class Exper05Process : public ForkProcess {
-   public:
+public:
     Exper05Process(SemaphorePtr sem);
 
-   private:
-    void _run();
+private:
+    void _run() override;
+
     SemaphorePtr sem;
 };
 

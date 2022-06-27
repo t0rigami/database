@@ -37,7 +37,7 @@ void Page::remove(size_t index) {
 
 void Page::removeAndRetire(size_t index) {
     auto &tuple = tuples[index];
-    tuple.retire();
+    tuple.retireSpaceAndData();
     remove(index);
 }
 

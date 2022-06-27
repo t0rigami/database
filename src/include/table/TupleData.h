@@ -30,6 +30,10 @@ struct TupleData {
      * @brief 元组对应的数据项的指针
      *
      */
+    explicit TupleData(int tupleSize);
+
+    TupleData();
+
     void **data;
     /**
      * @brief 每个元组的数据大小
@@ -45,9 +49,13 @@ struct TupleData {
 
     size_t getTotalSize() const;
 
-    void retire() const;
+    void retireSpaceAndData() const;
 
     void printFormat(ColumnPtr *columns, int columnSize) const;
+
+    void printFormat(const std::vector<ColumnPtr> &columns) const;
+
+    void retireSpace() const;
 };
 
 #endif

@@ -49,7 +49,7 @@ private:
      * @brief 当前进程的 Pid
      *
      */
-    pid_t currentProcessId;
+    pid_t currentProcessId{};
     /**
      * @brief 当前进程的标识符
      *

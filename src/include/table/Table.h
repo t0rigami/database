@@ -48,10 +48,21 @@ public:
          */
         Builder &addColumn(const std::string &columnName,
                            ColumnTypeEnum type,
-                           int columnSize);
+                           int columnSize,
+                           bool nullable = true);
 
+        /**
+         * 设置存储页面的路径
+         * @param pagePath 页面路径
+         * @return Builder&
+         */
         Builder &pagePath(const std::string &pagePath);
 
+        /**
+         * 设置表的 id
+         * @param tableId 表 id
+         * @return Builder&
+         */
         Builder &tableId(int32_t tableId);
 
         /**
@@ -132,14 +143,35 @@ public:
      */
     void saveRangePage(size_t lRange, size_t rRange);
 
+    /**
+     * 保存所有页面
+     */
     void saveAllPage();
 
+    /**
+     * 读取某一个记录
+     * @param pageNum 页码
+     * @param count 项目
+     * @return Tuple
+     */
     TupleData getRecordFromFile(size_t pageNum, size_t count);
 
+    /**
+     * 获取页面总数
+     * @return
+     */
     int getPageSize() const;
 
+    /**
+     * 格式化打印一个 Tuple
+     * @param tuple
+     */
     void print(const TupleData &tuple);
 
+    /**
+     * 获取所有页面
+     * @return 页面列表
+     */
     std::vector<PagePtr> &getPages();
 
     /**
@@ -158,11 +190,70 @@ public:
      */
     PagePtr getPage(size_t pageNum);
 
+    /**
+     * 从表结构文件中加载一张表
+     * @param tablePath 表结构路径
+     */
     explicit Table(const std::string &tablePath);
 
+    /**
+     * 获取表 Id
+     * @return 表 Id
+     */
     int32_t getTableId() const;
 
+    /**
+ * 设置表存储路径
+ * @param path
+ */
+    void setPagePath(const std::string &path);
+
+    /**
+     * 获取所有表列信息
+     * @return
+     */
+    ColumnPtr *getColumns() const;
+
+    /**
+     * 获取表列的个数
+     * @return
+     */
+    int getColumnSize() const;
+
+    /**
+     * 根据列名选择除列信息
+     * @param columnName 列名
+     * @return 列信息
+     */
+    ColumnPtr selectColumn(const std::string &columnName);
+
+    /**
+     * 加载一个页面
+     * @param pageNum 页码
+     */
+    void loadPage(int pageNum);
+
+    /**
+     * 加载一个范围内的页面 [lRange, rRange]
+     * @param lRange 左边界
+     * @param rRange 有边界
+     */
+    void loadPage(int lRange, int rRange);
+
+    /**
+     * 加载所有页面
+     */
+    void loadAllPage();
+
+#pragma region Public Static Property Definition
+
+    /**
+     * pg_class 系统表 ID 1259
+     */
     const static int PG_CLASS_ID;
+    /**
+     * pg_attribute 系统 ID 1249
+     */
     const static int PG_ATTRIBUTE_ID;
 
     /**
@@ -179,31 +270,63 @@ public:
      */
     static void insertTable(TablePtr classTable, TablePtr table);
 
+    /**
+     * 从内存中加载 pg_class 信息
+     * @param classPath pg_class 页面路径
+     * @return pg_class 表
+     */
     static TablePtr loadClass(const std::string &classPath);
 
+    /**
+     * 从内存中加载 pg_attribute 信息
+     * @param attributePath pg_attribute 页面路径
+     * @return pg_attribute 表
+     */
     static TablePtr loadAttribute(const std::string &attributePath);
 
+    /**
+     * 构建 pg_class 表
+     * @param pagePath 表存储路径
+     * @return  pg_class 表
+     */
     static TablePtr buildClassTable(const std::string &pagePath);
 
+    /**
+     * 构建 pg_attribute 表
+     * @param pagePath 表存储路径
+     * @return pg_attribute 表
+     */
     static TablePtr buildAttributeTable(const std::string &pagePath);
 
+    /**
+     * 创建一张表
+     * @param tableName 表名称
+     * @param columns 表的列信息
+     * @return 表
+     */
     static TablePtr create(const std::string &tableName, std::initializer_list<Column> columns);
 
-    void setPagePath(const std::string &path);
+#pragma endregion
 
-    ColumnPtr *getColumns() const;
+    std::string selectString(const std::string &columnName, const TupleData &tuple);
 
-    int getColumnSize() const;
+    int selectInt(const std::string &columnName, const TupleData &tuple);
 
 private:
+    /**
+     * 表 id 的计数
+     */
     static int TABLE_ID_COUNT;
 
+    /**
+     * 默认空构造
+     */
     Table();
 
     /**
      * 表 id
      */
-    int32_t tableId{};
+    int tableId;
     /**
      * 表名
      */
@@ -219,11 +342,11 @@ private:
     /**
      * 列
      */
-    ColumnPtr *columns{};
+    ColumnPtr *columns;
     /**
      * 列的个数
      */
-    int size{};
+    int size;
     /**
      * 表存储的路径
      */
@@ -232,10 +355,6 @@ private:
      * 表中页存储的路径
      */
     std::string pagePath;
-
-    void loadPage(int pageNum);
-
-    void loadPage(int lRange, int rRange);
 };
 
 #endif

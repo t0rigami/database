@@ -4,20 +4,21 @@
 #include "Assert.h"
 #include "Functional.h"
 
-template <class T>
+template<class T>
 class Optional {
-   public:
+public:
     /**
      * @brief 创建一个空的 Optional
      *
      */
     explicit Optional();
+
     /**
      * @brief 创建一个有值的 Optional
      *
      * @param value 当前值
      */
-    explicit Optional(const T& value);
+    explicit Optional(const T &value);
 
     /**
      * @brief 如果当前有值，就执行操作
@@ -37,14 +38,14 @@ class Optional {
      *
      * @return 值
      */
-    T get();
+    T &get();
 
     /**
      * @brief 获取值，如果没有值则返回一个默认值
      *
      * @return T
      */
-    T getOrElse(const T& defaultValue);
+    T getOrElse(const T &defaultValue);
 
     /**
      * @brief 是否为空
@@ -54,36 +55,36 @@ class Optional {
      */
     bool empty() const;
 
-   private:
+private:
     T value;
     bool isEmpty;
 };
 
-template <class T>
+template<class T>
 Optional<T>::Optional() : isEmpty(true) {}
 
-template <class T>
-Optional<T>::Optional(const T& value) : isEmpty(false), value(value) {}
+template<class T>
+Optional<T>::Optional(const T &value) : isEmpty(false), value(value) {}
 
-template <class T>
+template<class T>
 void Optional<T>::ifPresent(CONSUMER(T)) {
     if (!isEmpty)
         consumer(value);
 }
 
-template <class T>
-T Optional<T>::get() {
+template<class T>
+T &Optional<T>::get() {
     Assert::isFalse(isEmpty, "null pointer");
 
     return value;
 }
 
-template <class T>
-T Optional<T>::getOrElse(const T& defaultValue) {
+template<class T>
+T Optional<T>::getOrElse(const T &defaultValue) {
     return isEmpty ? defaultValue : value;
 }
 
-template <class T>
+template<class T>
 void Optional<T>::ifPresentElse(CONSUMER(T), RUNABLE) {
     if (isEmpty)
         run();
@@ -91,7 +92,7 @@ void Optional<T>::ifPresentElse(CONSUMER(T), RUNABLE) {
         consumer(value);
 }
 
-template <class T>
+template<class T>
 bool Optional<T>::empty() const {
     return isEmpty;
 }

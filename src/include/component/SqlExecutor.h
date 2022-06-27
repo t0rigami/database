@@ -6,13 +6,12 @@
 #define DB_SERVER_SQL_EXECUTOR_H
 
 #include "ResultSet.h"
-
-class DatabaseContext;
+#include <unordered_map>
+#include <Table.h>
+#include "SqlParser.h"
 
 class SqlExecutor {
 public:
-    void setContext(DatabaseContext *context);
-
     /**
      * 简单 select 查询
      * @param tableName 表名
@@ -21,10 +20,18 @@ public:
      * @return 结果集
      */
     ResultSet execSimpleQuery(const std::string &tableName, const std::string &logicalExpression,
-                              std::initializer_list<ColumnPtr> columns);
+                              std::initializer_list<std::string> selectedName);
+
+    /**
+     * 设置 _tables
+     * @param _tables 表
+     */
+    void setTables(std::unordered_map<int, TablePtr> *_tables);
+
+    static bool eval(ColumnPtr column, const TupleData &tuple, BiOperator op, int rightOperand);
 
 private:
-    DatabaseContext *context;
+    std::unordered_map<int, TablePtr> *tables;
 };
 
 #endif //DB_SERVER_SQL_EXECUTOR_H

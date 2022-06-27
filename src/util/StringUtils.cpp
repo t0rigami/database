@@ -38,13 +38,26 @@ bool StringUtils::isBlank(const std::string &s) {
 
 std::string StringUtils::toString(ColumnTypeEnum type) {
     switch (type) {
-        case ColumnTypeEnum::INT:
+        case INT:
             return "INT";
-        case ColumnTypeEnum::CHAR:
+        case CHAR:
             return "CHAR";
-        case ColumnTypeEnum::VARCHAR:
+        case VARCHAR:
             return "VARCHAR";
         default:
             return "NONE";
     }
+}
+
+bool StringUtils::isNumber(const std::string &numStr) {
+    try {
+        std::stoll(numStr);
+        return true;
+    } catch (std::invalid_argument &e) {
+        return false;
+    }
+}
+
+int StringUtils::parseInt(const std::string &numStr) {
+    return std::stoi(numStr);
 }

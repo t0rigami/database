@@ -50,18 +50,22 @@ aux_source_directory(src/io IO_SOURCE_DIR)
 include_directories(src/include/sql)
 aux_source_directory(src/sql SQL_SOURCE_DIR)
 
+# Expression 源文件目录
+include_directories(src/include/expression)
+aux_source_directory(src/expression EXPRESSION_SOURCE_DIR)
+
 # Client 源文件
 aux_source_directory(src/client CLIENT_SOURCE_DIR)
 
-# Test 源文件
-aux_source_directory(src/test TEST_SOURCE_DIR)
+# Test
+include_directories(src/include/test)
 
 aux_source_directory(src TOTAL_SOURCE_DIR)
 
 add_executable(db_server ${MAIN_SOURCE_DIR} ${UTIL_SOURCE_DIR} ${ACCESS_SOURCE_DIR}
         ${CONF_SOURCE_DIR} ${COMPONENT_SOURCE_DIR} ${NET_SOURCE_DIR} ${PROCESS_SOURCE_DIR}
         ${THREAD_SOURCE_DIR} ${TEST_SOURCE_DIR} ${TABLE_SOURCE_DIR} ${IO_SOURCE_DIR} ${COLLECTION_SOURCE_DIR}
-        ${SQL_SOURCE_DIR})
+        ${SQL_SOURCE_DIR} ${EXPRESSION_SOURCE_DIR} ${TEST})
 
 # add_executable (db_client ${CLIENT_SOURCE_DIR} ${UTIL_SOURCE_DIR} ${NET_SOURCE_DIR})
 

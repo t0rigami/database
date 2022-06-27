@@ -1,5 +1,6 @@
 #include "TupleData.h"
 #include "Assert.h"
+#include "MallocUtils.h"
 
 size_t TupleData::getTotalSize() const {
     size_t totalSize = sizeof(size_t) * length;
@@ -8,7 +9,7 @@ size_t TupleData::getTotalSize() const {
     return totalSize;
 }
 
-void TupleData::retire() const {
+void TupleData::retireSpaceAndData() const {
     for (size_t i = 0; i < length; ++i)
         free(data[i]);
     free(data);
@@ -36,6 +37,40 @@ void TupleData::printFormat(Column **columns, int columnSize) const {
     }
     printf(")\n");
 }
+
+TupleData::TupleData(int tupleSize) : length(tupleSize) {
+    this->data = static_cast<void **>(MallocUtils::mallocAndInitial(tupleSize * sizeof(void *)));
+    this->dataSize = static_cast<size_t *>(MallocUtils::mallocAndInitial(tupleSize * sizeof(size_t)));
+}
+
+void TupleData::retireSpace() const {
+    free(this->data);
+    free(this->dataSize);
+}
+
+void TupleData::printFormat(const std::vector<ColumnPtr> &columns) const {
+    Assert::isTrue(columns.size() == this->length, "not match!");
+    printf("(");
+    for (int i = 0; i < columns.size(); i++) {
+        switch (columns[i]->type) {
+            case INT:
+                printf("[I]%d", *static_cast<int *>(this->data[i]));
+                break;
+            case CHAR:
+                printf("[C]%c", *static_cast<char *>(this->data[i]));
+                break;
+            case VARCHAR:
+                printf("[S]%s", static_cast<char *>(this->data[i]));
+                break;
+        }
+        if (i != columns.size() - 1) {
+            printf(", ");
+        }
+    }
+    printf(")\n");
+}
+
+TupleData::TupleData() = default;
 
 TupleData::Builder &TupleData::Builder::addString(const std::string &str) {
     order.push_back(ColumnTypeEnum::VARCHAR);

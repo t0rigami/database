@@ -1,4 +1,4 @@
-#include <time.h>
+#include <ctime>
 #include <wait.h>
 #include <iostream>
 #include "Array.h"
@@ -13,46 +13,23 @@
 #include "ServerSocket.h"
 #include "Table.h"
 #include "TupleData.h"
+#include "SqlParser.h"
+#include "StringUtils.h"
+#include "Test.h"
 
 using namespace std;
 
 int main(int argc, char const *argv[]) {
-    DatabaseContext context;
-//
-    context.initTable();
+    using namespace Test;
 
-/*    // // 读取配置文件
-    // context.initConfiguration("conf/db.conf");
+    DatabaseContext ctx;
 
-    // // 初始化服务器 Socket
-    // context.initServerSocket();
+    testInitContext(ctx);
 
-    // 启动监听
-    // context.start();*/
+    testCreateStudentTable(ctx);
 
-    TablePtr student_7320_table = Table::create("student_7320",
-                                                {
-                                                        {"name", ColumnTypeEnum::VARCHAR, 50, 0, false},
-                                                        {"age",  ColumnTypeEnum::INT,     4,  0, false}
-                                                });
-
-    Assert::isTrue(context.registerTable(student_7320_table), "register error!");
-
-    for (int i = 0; i < 400; i++) {
-        // 插入到表内
-        student_7320_table->insert(*TupleData::Builder()
-                .addString("zhangsan" + to_string(i))
-                .addInt(i)
-                .build());
-    }
-
-    student_7320_table->saveAllPage();
-
-    for (const auto &item: context.getTables()) {
-        item.second->summary();
-    }
+    // testBiOperator();
 
     printf("Over!\n");
-
     return 0;
 }

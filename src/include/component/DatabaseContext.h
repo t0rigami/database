@@ -48,9 +48,39 @@ public:
      */
     int start();
 
-    bool registerTable(TablePtr table);
+    /**
+     * 注册一个表
+     * @param table 表
+     * @param saveAction 是否立刻更新表的结构到 pg_class 和 pg_attribute
+     * @return 是否成功
+     */
+    bool registerTable(TablePtr table, bool saveAction = false);
 
-    const std::unordered_map<int32_t, TablePtr> &getTables() const;
+    /**
+     * 通过表 id 获取表信息
+     * @param tableId 表 id
+     * @return 表 id 对应的表信息
+     */
+    TablePtr getTableById(int tableId);
+
+    /**
+     * 通过表的名称获取表信息
+     * @param name 表名称
+     * @return 表信息
+     */
+    TablePtr getTableByName(const std::string &name);
+
+    /**
+     * 获取所有的表映射
+     * @return 表映射
+     */
+    std::unordered_map<int, TablePtr> &getTables();
+
+    /**
+     * 获取 SqlExecutor
+     * @return  SqlExecutor
+     */
+    SqlExecutor &getSqlExecutor();
 
 private:
     /**
@@ -64,11 +94,18 @@ private:
     /**
      * 数据库表管理
      */
-    std::unordered_map<int32_t, TablePtr> tables;
+    std::unordered_map<int, TablePtr> tables;
     /**
      * Sql
      */
     SqlExecutor sqlExecutor;
+
+    /**
+     * 初始化用户定义的表
+     * @param pgClassTable pg_class 表
+     * @param pgAttributeTable pg_attribute 表
+     */
+    void initUserTable(TablePtr pgClassTable, TablePtr pgAttributeTable);
 };
 
 #endif  // HDB_DATABASE_CONTEXT_H
