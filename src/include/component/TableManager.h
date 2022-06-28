@@ -30,10 +30,11 @@ public:
     /**
      * 注册一个表
      * @param table 表
+     * @param insertClsAndAttr 是否需要将改表信息插入到 pg_class 和 pg_attribute
      * @param saveAction 是否立刻更新表的结构到 pg_class 和 pg_attribute
      * @return 是否成功
      */
-    bool registerTable(TablePtr table, bool saveAction = false);
+    bool registerTable(TablePtr table, bool insertClsAndAttr = true, bool saveAction = false);
 
     /**
      * 通过表 id 获取表信息

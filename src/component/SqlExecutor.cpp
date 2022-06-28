@@ -73,7 +73,6 @@ ResultSet SqlExecutor::execSimpleQuery(
             // 执行表达式，如果满足则加入结果集
             if (SqlExecutor::eval(col, item, op, rightOperand))
                 resultSet.append(item);
-            printf("read item=%p\n", &item);
         }
 
 

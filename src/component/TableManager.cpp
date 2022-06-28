@@ -11,9 +11,9 @@ void TableManager::initTable() {
     pgClass = buildClassTable();
     pgAttribute = buildAttributeTable();
 
-    // 注册到系统中
-    registerTable(pgClass);
-    registerTable(pgAttribute);
+    // 注册到系统中，此时先不将两张表自己注册自己
+    registerTable(pgClass, false);
+    registerTable(pgAttribute, false);
 
     // 判断文件中系统表的记录是否存在
     bool exists = FileUtils::exists(pgClass->getPagePath()) &&
@@ -22,6 +22,12 @@ void TableManager::initTable() {
 
     // 如果不存在则直接将系统表保存到文件中，然后返回
     if (!exists) {
+        // 不存在的话就说明没有，此时需要让两张表自己插入自己的信息
+        insertClass(pgClass);
+        insertAttribute(pgClass);
+        insertClass(pgAttribute);
+        insertAttribute(pgAttribute);
+
         pgClass->saveAllPage();
         pgAttribute->saveAllPage();
         return;
@@ -80,7 +86,7 @@ void TableManager::initUserTable() {
     }
 }
 
-bool TableManager::registerTable(TablePtr table, bool saveAction) {
+bool TableManager::registerTable(TablePtr table, bool insertClsAndAttr, bool saveAction) {
     if (exists(table)) {
         return false;
     }
@@ -94,11 +100,12 @@ bool TableManager::registerTable(TablePtr table, bool saveAction) {
     // 插入到表的 Map
     this->tables.insert({table->getTableId(), table});
 
-    // 插入表信息
-    insertClass(table);
-    // 插入表列信息
-    insertAttribute(table);
-
+    if (insertClsAndAttr) {
+        // 插入表信息
+        insertClass(table);
+        // 插入表列信息
+        insertAttribute(table);
+    }
     if (saveAction) {
         pgClass->saveAllPage();
         pgAttribute->saveAllPage();
@@ -131,17 +138,18 @@ TableManager::TableManager(SqlExecutor &sqlExecutor, std::string pageBasePath)
 }
 
 void TableManager::insertClass(TablePtr table) {
-    printf("Insert Class name=%s, id=%d\n", table->getName().c_str(), table->getTableId());
+//    printf("Insert Class name=%s, id=%d\n", table->getName().c_str(), table->getTableId());
+    if (pgClass->getPages().empty()) pgClass->loadAllPage();
     TupleDataPtr tuple = TupleData::Builder()
             .addInt(table->getTableId())
             .addInt(table->getColumnSize())
             .addString(table->getName())
             .build();
-
     pgClass->insert(*tuple);
 }
 
 void TableManager::insertAttribute(TablePtr table) {
+    if (pgAttribute->getPages().empty()) pgAttribute->loadAllPage();
     for (int i = 0; i < table->getColumnSize(); i++) {
         ColumnPtr column = table->getColumns()[i];
         TupleDataPtr tuple = TupleData::Builder()

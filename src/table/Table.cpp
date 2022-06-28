@@ -128,7 +128,7 @@ size_t Table::insert(const TupleData &tupleData) {
 
 PagePtr Table::getPage(int pageNum) {
     Assert::isTrue(pageNum >= 0 && pageNum < getPageSize(), "out of range");
-    if (pageNum > pages.size()) {
+    if (pageNum >= pages.size()) {
         this->loadPage((int) pages.size(), pageNum);
     }
     return this->pages[pageNum];
@@ -263,6 +263,7 @@ void Table::loadPage(int lRange, int rRange) {
         auto page = new Page(tmp, columns, size);
         pages.push_back(page);
     }
+    MallocUtils::retire(tmp);
 }
 
 ColumnPtr *Table::getColumns() const {

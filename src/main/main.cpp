@@ -19,7 +19,7 @@
 
 using namespace std;
 
-int main(int argc, char const* argv[]) {
+int main(int argc, char const *argv[]) {
     using namespace Test;
 
     DatabaseContext ctx;
@@ -28,21 +28,21 @@ int main(int argc, char const* argv[]) {
 
     testCreateStudentTable(ctx);
 
-    testCreateTeacherTable(ctx);
+    //    testCreateTeacherTable(ctx);
 
-    testPrintAllTable(ctx);
+    // testPrintAllTable(ctx);
 
-    // testInsertToStudentTable(ctx);
+    testInsertToStudentTable(ctx);
 
     // testInsertToTeacherTable(ctx);
 
     testPrintStudentTable(ctx);
 
-    testPrintTeacherTable(ctx);
+    // testPrintTeacherTable(ctx);
 
     // testBiOperator();
 
-    printf("Over!\n");
+    testQuickSort(ctx);
 
     return 0;
 }

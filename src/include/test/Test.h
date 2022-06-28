@@ -18,17 +18,18 @@
 #include "StringUtils.h"
 #include "Table.h"
 #include "TupleData.h"
+#include "Sort.h"
 
 using namespace std;
 
 namespace Test {
     const char *STUDENT_TABLE_NAME = "student_7320";
-    const int STUDENT_TABLE_ID = 1;
+    const int STUDENT_TABLE_ID = 3;
     const char *TEACHER_TABLE_NAME = "teacher";
     const int TEACHER_TABLE_ID = 2;
 
 
-    void testInitContext(DatabaseContext &ctx) {
+    __attribute__((unused)) void testInitContext(DatabaseContext &ctx) {
         // ctx.initConfiguration("conf/db.conf");
 
         ctx.initSqlExecutor();
@@ -41,7 +42,7 @@ namespace Test {
     }
 
 
-    void testCreateStudentTable(DatabaseContext &ctx) {
+    __attribute__((unused))  void testCreateStudentTable(DatabaseContext &ctx) {
         TablePtr studentTable = Table::create(STUDENT_TABLE_NAME, STUDENT_TABLE_ID, {
                 {(char *) "name", VARCHAR, 50, 0, false},
                 {(char *) "age",  INT,     4,  1, false}
@@ -55,7 +56,7 @@ namespace Test {
     }
 
 
-    void testInsertToStudentTable(DatabaseContext &ctx) {
+    __attribute__((unused)) void testInsertToStudentTable(DatabaseContext &ctx) {
         TablePtr studentTable = ctx.getTableByName(STUDENT_TABLE_NAME);
         if (studentTable == nullptr) {
             printf("not find %s table\n", STUDENT_TABLE_NAME);
@@ -69,11 +70,17 @@ namespace Test {
                     .build());
         }
 
+        for (int i = 0; i < studentTable->getPageSize(); ++i) {
+            for (const auto &item: studentTable->getPage(i)->getTuples()) {
+                studentTable->formatPrint(item);
+            }
+        }
+
         studentTable->saveAllPage();
     }
 
 
-    void testPrintStudentTable(DatabaseContext &ctx) {
+    __attribute__((unused)) void testPrintStudentTable(DatabaseContext &ctx) {
         TablePtr studentTable = ctx.getTableByName(STUDENT_TABLE_NAME);
 
         if (studentTable == nullptr) {
@@ -92,7 +99,7 @@ namespace Test {
     }
 
 
-    void testCreateTeacherTable(DatabaseContext &ctx) {
+    __attribute__((unused)) void testCreateTeacherTable(DatabaseContext &ctx) {
         TablePtr teacherTable = Table::create(TEACHER_TABLE_NAME, TEACHER_TABLE_ID, {
                 {(char *) "id",       INT,     50, 0, false},
                 {(char *) "name",     VARCHAR, 50, 1, false},
@@ -107,7 +114,7 @@ namespace Test {
     }
 
 
-    void testInsertToTeacherTable(DatabaseContext &ctx) {
+    __attribute__((unused)) void testInsertToTeacherTable(DatabaseContext &ctx) {
         TablePtr teacherTable = ctx.getTableByName(TEACHER_TABLE_NAME);
         if (teacherTable == nullptr) {
             printf("not find %s table\n", TEACHER_TABLE_NAME);
@@ -127,7 +134,7 @@ namespace Test {
     }
 
 
-    void testPrintTeacherTable(DatabaseContext &ctx) {
+    __attribute__((unused)) void testPrintTeacherTable(DatabaseContext &ctx) {
         TablePtr teacherTable = ctx.getTableByName(TEACHER_TABLE_NAME);
 
         if (teacherTable == nullptr) {
@@ -145,7 +152,7 @@ namespace Test {
         }
     }
 
-    void testSelectSimple(DatabaseContext &ctx) {
+    __attribute__((unused)) void testSelectSimple(DatabaseContext &ctx) {
         TablePtr pgAttribute = ctx.getTableByName("pg_attribute");
 
         printf("========= total record =======\n");
@@ -171,7 +178,7 @@ namespace Test {
     }
 
 
-    void testSelectSimpleWithProjection(DatabaseContext &ctx) {
+    __attribute__((unused)) void testSelectSimpleWithProjection(DatabaseContext &ctx) {
         TablePtr pgAttribute = ctx.getTableByName("pg_attribute");
 
         printf("========= total record =======\n");
@@ -195,7 +202,14 @@ namespace Test {
     }
 
 
-    void testBiOperator(const std::string &expression = "100 < age") {
+    __attribute__((unused)) void testPrintAllTable(DatabaseContext &ctx) {
+        for (const auto &table: ctx.getTableManager()->getTables()) {
+            table.second->summary();
+        }
+    }
+
+
+    __attribute__((unused)) void testBiOperator(const std::string &expression = "100 < age") {
         printf("expression = %s\n", expression.c_str());
         Optional<BiRelation> optional = SqlParser::toBiRelation(expression);
 
@@ -216,10 +230,34 @@ namespace Test {
     }
 
 
-    void testPrintAllTable(DatabaseContext &ctx) {
-        for (const auto &table: ctx.getTableManager()->getTables()) {
-            table.second->summary();
+    __attribute__((unused)) void testQuickSort(DatabaseContext &ctx) {
+        printf(">>>>>>>>>>>>> Start TestQuickSort <<<<<<<<<<<<<<<\n");
+        TablePtr studentTable = ctx.getTableByName(STUDENT_TABLE_NAME);
+
+        if (studentTable == nullptr) {
+            printf("not found Student Table\n");
+            return;
         }
+
+        auto &tempPath = ctx.getDatabaseConfig().getTempPath();
+
+        PagePtr page = studentTable->getPage(0);
+
+        auto &record = page->getTuples();
+
+        for (const auto &item: record) {
+            studentTable->formatPrint(item);
+        }
+
+//        Sort::quickSort(page, tempPath + "/page-sort.tmp");
     }
+
+
+    __attribute__((unused)) void testExternalSort(DatabaseContext &ctx) {
+        TablePtr studentTable = ctx.getTableByName(STUDENT_TABLE_NAME);
+        auto &tempPath = ctx.getDatabaseConfig().getTempPath();
+        Sort::externalSort(studentTable, tempPath);
+    }
+
 
 }  // namespace Test

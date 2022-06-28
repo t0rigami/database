@@ -41,6 +41,11 @@ void DatabaseConfig::setConfig(Properties &properties) {
     if (StringUtils::isNotBlank(pagePath)) {
         this->_pagePath = pagePath;
     }
+
+    const std::string &tempPath = properties.get("temp.path");
+    if (StringUtils::isNotBlank(tempPath)) {
+        this->_tempPath = tempPath;
+    }
 }
 
 const std::string &DatabaseConfig::getServerSocketManagerName() const {
@@ -57,4 +62,8 @@ const std::string &DatabaseConfig::getTablePath() const {
 
 const std::string &DatabaseConfig::getPagePath() const {
     return _pagePath;
+}
+
+const std::string &DatabaseConfig::getTempPath() const {
+    return _tempPath;
 }

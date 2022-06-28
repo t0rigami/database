@@ -49,6 +49,12 @@ public:
      */
     const std::string &getPagePath() const;
 
+    /**
+     * 临时数据存放的路径
+     * @return 临时文件
+     */
+    const std::string &getTempPath() const;
+
 private:
     void setConfig(Properties &config);
 
@@ -57,6 +63,7 @@ private:
     std::string _serverSocketSubName{"Sub"};
     std::string _tablePath{"./table"};
     std::string _pagePath{"./page"};
+    std::string _tempPath{"./tmp"};
 };
 
 #endif  // HDB_DATABASE_CONFIG_H
