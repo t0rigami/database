@@ -2,14 +2,13 @@
 #include "Assert.h"
 #include "ByteReader.h"
 #include "ByteWriter.h"
-#include "StringUtils.h"
 #include "FileUtils.h"
+#include "StringUtils.h"
 
 #pragma region implement Table
 
 const int Table::PG_CLASS_ID = 1259;
 const int Table::PG_ATTRIBUTE_ID = 1249;
-int Table::TABLE_ID_COUNT = 0;
 
 Table::Table() = default;
 
@@ -127,15 +126,15 @@ size_t Table::insert(const TupleData &tupleData) {
     return 1;
 }
 
-PagePtr Table::getPage(size_t pageNum) {
+PagePtr Table::getPage(int pageNum) {
     Assert::isTrue(pageNum >= 0 && pageNum < getPageSize(), "out of range");
     if (pageNum > pages.size()) {
-        this->loadPage(pages.size(), pageNum);
+        this->loadPage((int) pages.size(), pageNum);
     }
     return this->pages[pageNum];
 }
 
-void Table::saveOnePage(size_t pageIdx) {
+void Table::saveOnePage(int pageIdx) {
     Assert::isTrue(pageIdx < pages.size(), "out of range");
     /**
      * 如果需要修改某一页中的内容，需要保证 [0, pageIdx]
@@ -148,10 +147,10 @@ void Table::saveOnePage(size_t pageIdx) {
             left = i;
             break;
         }
-    saveRangePage(left, pageIdx);
+    saveRangePage((int) left, (int) pageIdx);
 }
 
-void Table::saveRangePage(size_t lRange, size_t rRange) {
+void Table::saveRangePage(int lRange, int rRange) {
     Assert::isTrue(lRange <= rRange && lRange >= 0 && rRange < pages.size(),
                    "out of range");
     ByteWriter bw(pagePath, (rRange - lRange + 1) * Page::PAGE_SIZE);
@@ -168,10 +167,10 @@ void Table::saveRangePage(size_t lRange, size_t rRange) {
 
 void Table::saveAllPage() {
     if (this->pages.empty()) return;
-    this->saveRangePage(0, pages.size() - 1);
+    this->saveRangePage(0, (int) pages.size() - 1);
 }
 
-TupleData Table::getRecordFromFile(size_t pageNum, size_t count) {
+TupleData Table::getRecordFromFile(int pageNum, int count) {
     ByteReader br(pagePath);
     size_t pageOffset =
             pageNum * Page::PAGE_SIZE + PageHeaderData::PAGE_HEADER_DATA_SIZE;
@@ -187,7 +186,8 @@ TupleData Table::getRecordFromFile(size_t pageNum, size_t count) {
     TupleData record{};
     record.dataSize =
             (size_t *) MallocUtils::mallocAndInitial(sizeof(size_t) * this->size);
-    record.data = (void **) MallocUtils::mallocAndInitial(sizeof(void *) * this->size);
+    record.data =
+            (void **) MallocUtils::mallocAndInitial(sizeof(void *) * this->size);
     record.length = this->size;
 
     for (size_t i = 0; i < this->size; i++) {
@@ -213,7 +213,7 @@ std::vector<PagePtr> &Table::getPages() {
     return this->pages;
 }
 
-void Table::print(const TupleData &tuple) {
+void Table::formatPrint(const TupleData &tuple) {
     printf("%s (", name.c_str());
     for (size_t i = 0; i < size; i++) {
         if (i != 0) printf(",");
@@ -238,102 +238,6 @@ int32_t Table::getTableId() const {
     return tableId;
 }
 
-void Table::insertAttrs(TablePtr attrTable, TablePtr table) {
-    // ==== pg_attribute ====
-    // table_id     int
-    // name         varchar
-    // type         int
-    // _size         int
-    // order        int
-    // nullable     int
-    for (int i = 0; i < table->size; i++) {
-        ColumnPtr column = table->columns[i];
-        TupleDataPtr tuple = TupleData::Builder()
-                .addInt(table->getTableId())
-                .addInt(column->type)
-                .addInt(column->size)
-                .addInt(column->order)
-                .addInt(column->nullable)
-                .addString(column->name)
-                .build();
-        // 插入
-        attrTable->insert(*tuple);
-    }
-}
-
-void Table::insertTable(TablePtr classTable, TablePtr table) {
-    // ==== pg_class ====
-    // id     int
-    // name   varchar
-    // attr_count   int
-    TupleDataPtr tuple = TupleData::Builder()
-            .addInt(table->getTableId())
-            .addInt(table->getColumnSize())
-            .addString(table->getName())
-            .build();
-
-    classTable->insert(*tuple);
-}
-
-TablePtr Table::loadClass(const std::string &classPath) {
-    TablePtr classTable = buildClassTable(classPath);
-    // 加载所有的表信息
-    for (int i = 0; i < classTable->getPageSize(); ++i)
-        classTable->loadPage(i);
-    // 将表信息加入到 tables 中
-    for (int i = 0; i < classTable->getPageSize(); ++i) {
-        PagePtr page = classTable->getPage(i);
-        for (const auto &item: page->getTuples()) {
-//            TablePtr table = Table::create(item);
-        }
-    }
-    // 返回
-    return classTable;
-}
-
-TablePtr Table::loadAttribute(const std::string &attributePath) {
-    TablePtr attributeTable = buildAttributeTable(attributePath);
-    for (int i = 0; i < attributeTable->getPageSize(); i++)
-        attributeTable->loadPage(i);
-    return attributeTable;
-}
-
-TablePtr Table::buildClassTable(const std::string &pagePath) {
-    // ==== pg_class ====
-    // id     int
-    // name   varchar
-    // attr_count   int
-    return Table::Builder()
-            .tableId(Table::PG_CLASS_ID)
-            .name("pg_class")
-            .pagePath(pagePath)
-            .addColumn("id", ColumnTypeEnum::INT, sizeof(int))
-            .addColumn("attr_count", ColumnTypeEnum::INT, sizeof(int))
-            .addColumn("name", ColumnTypeEnum::VARCHAR, 50)
-            .build();
-}
-
-TablePtr Table::buildAttributeTable(const std::string &pagePath) {
-    // ==== pg_attribute ====
-    // table_id     int
-    // name         varchar
-    // type         int
-    // size         int
-    // order        int
-    // nullable     bool
-    return Table::Builder()
-            .tableId(Table::PG_ATTRIBUTE_ID)
-            .name("pg_attribute")
-            .pagePath(pagePath)
-            .addColumn("table_id", ColumnTypeEnum::INT, sizeof(int))
-            .addColumn("type", ColumnTypeEnum::INT, sizeof(int))
-            .addColumn("size", ColumnTypeEnum::INT, sizeof(int))
-            .addColumn("order", ColumnTypeEnum::INT, sizeof(int))
-            .addColumn("nullable", ColumnTypeEnum::INT, sizeof(int))
-            .addColumn("name", ColumnTypeEnum::VARCHAR, 50)
-            .build();
-}
-
 int Table::getPageSize() const {
     return FileUtils::size(pagePath) / Page::PAGE_SIZE;
 }
@@ -346,7 +250,8 @@ void Table::loadPage(int pageNum) {
 
 void Table::loadPage(int lRange, int rRange) {
     if (this->pages.size() > rRange) return;
-    Assert::isTrue(lRange >= 0 && rRange < getPageSize(), "at: Table::loadPage out of range");
+    Assert::isTrue(lRange >= 0 && rRange < getPageSize(),
+                   "at: Table::loadPage out of range");
     lRange = (int) this->pages.size();
 
     FILE *f = fopen(pagePath.c_str(), "rb");
@@ -383,7 +288,8 @@ Table::Builder &Table::Builder::addColumn(const std::string &columnName,
                                           ColumnTypeEnum type,
                                           int columnSize,
                                           bool nullable) {
-    auto column = new Column{MallocUtils::cString(columnName), type, columnSize};
+    auto column =
+            new Column{MallocUtils::cString(columnName), type, columnSize};
 
     column->nullable = nullable;
 
@@ -400,8 +306,7 @@ Table::Builder &Table::Builder::pagePath(const std::string &path) {
 
 Table *Table::Builder::build() {
     if (this->columns.empty()) return nullptr;
-    auto *columnArray =
-            MALLOC_SIZE_OF_TYPE(this->columns.size(), ColumnPtr);
+    auto *columnArray = MALLOC_SIZE_OF_TYPE(this->columns.size(), ColumnPtr);
 
     int columnSize = (int) columns.size();
 
@@ -419,12 +324,12 @@ Table::Builder &Table::Builder::tableId(int32_t tableId) {
     return *this;
 }
 
-TablePtr Table::create(const std::string &tableName, std::initializer_list<Column> columns) {
+TablePtr Table::create(const std::string &tableName,
+                       int tableId,
+                       std::initializer_list<Column> columns) {
     Table::Builder builder;
 
-    builder
-            .tableId(Table::TABLE_ID_COUNT++)
-            .name(tableName);
+    builder.tableId(tableId).name(tableName);
 
     for (const auto &column: columns) {
         builder.addColumn(column.name, column.type, column.size);
@@ -447,12 +352,17 @@ void Table::loadAllPage() {
     this->loadPage(0, getPageSize() - 1);
 }
 
-std::string Table::selectString(const std::string &columnName, const TupleData &tuple) {
+std::string Table::selectString(const std::string &columnName,
+                                const TupleData &tuple) {
     return std::string{(char *) tuple.data[columnMap[columnName]->order]};
 }
 
 int Table::selectInt(const std::string &columnName, const TupleData &tuple) {
     return *(int *) tuple.data[columnMap[columnName]->order];
+}
+
+const std::string &Table::getPagePath() const {
+    return pagePath;
 }
 
 #pragma endregion

@@ -135,13 +135,13 @@ public:
      *
      * @param pageNum
      */
-    void saveOnePage(size_t pageNum);
+    void saveOnePage(int pageNum);
 
     /**
      * @brief 保存一个范围内的所有页
      *
      */
-    void saveRangePage(size_t lRange, size_t rRange);
+    void saveRangePage(int lRange, int rRange);
 
     /**
      * 保存所有页面
@@ -154,7 +154,7 @@ public:
      * @param count 项目
      * @return Tuple
      */
-    TupleData getRecordFromFile(size_t pageNum, size_t count);
+    TupleData getRecordFromFile(int pageNum, int count);
 
     /**
      * 获取页面总数
@@ -166,7 +166,7 @@ public:
      * 格式化打印一个 Tuple
      * @param tuple
      */
-    void print(const TupleData &tuple);
+    void formatPrint(const TupleData &tuple);
 
     /**
      * 获取所有页面
@@ -188,7 +188,7 @@ public:
      * @param pageNum
      * @return PagePtr
      */
-    PagePtr getPage(size_t pageNum);
+    PagePtr getPage(int pageNum);
 
     /**
      * 从表结构文件中加载一张表
@@ -245,6 +245,8 @@ public:
      */
     void loadAllPage();
 
+    const std::string &getPagePath() const;
+
 #pragma region Public Static Property Definition
 
     /**
@@ -257,54 +259,12 @@ public:
     const static int PG_ATTRIBUTE_ID;
 
     /**
-     * 插入表的属性到属性表
-     * @param attrTable 属性表
-     * @param table 目标表
-     */
-    static void insertAttrs(TablePtr attrTable, TablePtr table);
-
-    /**
-     * 插入表到表信息表
-     * @param classTable 表信息表
-     * @param table 目标表
-     */
-    static void insertTable(TablePtr classTable, TablePtr table);
-
-    /**
-     * 从内存中加载 pg_class 信息
-     * @param classPath pg_class 页面路径
-     * @return pg_class 表
-     */
-    static TablePtr loadClass(const std::string &classPath);
-
-    /**
-     * 从内存中加载 pg_attribute 信息
-     * @param attributePath pg_attribute 页面路径
-     * @return pg_attribute 表
-     */
-    static TablePtr loadAttribute(const std::string &attributePath);
-
-    /**
-     * 构建 pg_class 表
-     * @param pagePath 表存储路径
-     * @return  pg_class 表
-     */
-    static TablePtr buildClassTable(const std::string &pagePath);
-
-    /**
-     * 构建 pg_attribute 表
-     * @param pagePath 表存储路径
-     * @return pg_attribute 表
-     */
-    static TablePtr buildAttributeTable(const std::string &pagePath);
-
-    /**
      * 创建一张表
      * @param tableName 表名称
      * @param columns 表的列信息
      * @return 表
      */
-    static TablePtr create(const std::string &tableName, std::initializer_list<Column> columns);
+    static TablePtr create(const std::string &tableName, int tableId, std::initializer_list<Column> columns);
 
 #pragma endregion
 
@@ -313,11 +273,6 @@ public:
     int selectInt(const std::string &columnName, const TupleData &tuple);
 
 private:
-    /**
-     * 表 id 的计数
-     */
-    static int TABLE_ID_COUNT;
-
     /**
      * 默认空构造
      */

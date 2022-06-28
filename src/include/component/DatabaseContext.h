@@ -7,17 +7,20 @@
 #include "ServerSocketManager.h"
 #include "Table.h"
 #include "SqlExecutor.h"
+#include "TableManager.h"
 
 #define HDB_LOG_TRACE
 
 class DatabaseContext {
+
 public:
-    /**
-     * @brief 获取配置文件
-     *
-     * @return const DatabaseConfig&
-     */
-    const DatabaseConfig &getConfig() const;
+    DatabaseContext();
+
+    ~DatabaseContext();
+
+#pragma region Config
+
+public:
 
     /**
      * @brief 初始化配置
@@ -27,26 +30,53 @@ public:
     void initConfiguration(std::string path);
 
     /**
+    * @brief 获取配置文件
+    *
+    * @return const DatabaseConfig&
+    */
+    const DatabaseConfig &getDatabaseConfig() const;
+
+private:
+    /**
+     * 数据库相关配置
+     */
+    DatabaseConfig config;
+
+#pragma endregion
+
+#pragma region Socket
+
+public:
+
+    /**
      * @brief 初始化 DB 的网络通信
      *
      */
     void initServerSocket();
 
     /**
-     * 初始化系统表信息
-     */
-    void initTable();
-
-    /**
-     * 初始化 SQL 执行器
-     */
-    void initSqlExecutor();
-
-    /**
      * @brief 开启服务
      *
      */
     int start();
+
+    const ServerSocketManager &getServerSocketManager() const;
+
+private:
+    /**
+     * 数据库通信管理
+     */
+    ServerSocketManager serverSocketManager;
+#pragma endregion
+
+#pragma region Table
+
+public:
+
+    /**
+     * 初始化系统表信息
+     */
+    void initTable();
 
     /**
      * 注册一个表
@@ -70,11 +100,22 @@ public:
      */
     TablePtr getTableByName(const std::string &name);
 
+    TableManager *getTableManager();
+
+private:
     /**
-     * 获取所有的表映射
-     * @return 表映射
+     * 数据库表管理
      */
-    std::unordered_map<int, TablePtr> &getTables();
+    TableManager *tableManager;
+#pragma endregion
+
+#pragma region SqlExecutor
+
+public:
+    /**
+     * 初始化 SQL 执行器
+     */
+    void initSqlExecutor();
 
     /**
      * 获取 SqlExecutor
@@ -84,28 +125,10 @@ public:
 
 private:
     /**
-     * 数据库相关配置
-     */
-    DatabaseConfig config;
-    /**
-     * 数据库通信管理
-     */
-    ServerSocketManager serverSocketManager;
-    /**
-     * 数据库表管理
-     */
-    std::unordered_map<int, TablePtr> tables;
-    /**
      * Sql
      */
-    SqlExecutor sqlExecutor;
-
-    /**
-     * 初始化用户定义的表
-     * @param pgClassTable pg_class 表
-     * @param pgAttributeTable pg_attribute 表
-     */
-    void initUserTable(TablePtr pgClassTable, TablePtr pgAttributeTable);
+    SqlExecutor sqlExecutor{};
+#pragma endregion
 };
 
 #endif  // HDB_DATABASE_CONTEXT_H

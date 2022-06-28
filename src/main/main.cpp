@@ -1,5 +1,5 @@
-#include <ctime>
 #include <wait.h>
+#include <ctime>
 #include <iostream>
 #include "Array.h"
 #include "ByteReader.h"
@@ -11,15 +11,15 @@
 #include "SemaphorePOSIX.h"
 #include "SemaphoreXSI.h"
 #include "ServerSocket.h"
-#include "Table.h"
-#include "TupleData.h"
 #include "SqlParser.h"
 #include "StringUtils.h"
+#include "Table.h"
 #include "Test.h"
+#include "TupleData.h"
 
 using namespace std;
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char const* argv[]) {
     using namespace Test;
 
     DatabaseContext ctx;
@@ -28,8 +28,21 @@ int main(int argc, char const *argv[]) {
 
     testCreateStudentTable(ctx);
 
+    testCreateTeacherTable(ctx);
+
+    testPrintAllTable(ctx);
+
+    // testInsertToStudentTable(ctx);
+
+    // testInsertToTeacherTable(ctx);
+
+    testPrintStudentTable(ctx);
+
+    testPrintTeacherTable(ctx);
+
     // testBiOperator();
 
     printf("Over!\n");
+
     return 0;
 }

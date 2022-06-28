@@ -1,6 +1,6 @@
 #include "Debug.h"
 
-void Debug::Print::message(const char* msg, int options) {
+void Debug::Print::message(const char *msg, int options) {
     for (int i = 0; i < 32; i++) {
         if (options & (1 << i)) {
             switch (i) {
@@ -22,7 +22,7 @@ void Debug::Print::message(const char* msg, int options) {
                     printf("{%ld}", time(NULL));
                     break;
                 default:
-                    throw std::logic_error("debug print not match option ..");
+                    throw std::logic_error("debug formatPrint not match option ..");
                     break;
             }
         }
@@ -33,28 +33,28 @@ void Debug::Print::message(const char* msg, int options) {
     fflush(stdout);
 }
 
-void Debug::Print::message(const std::string& msg, int options) {
+void Debug::Print::message(const std::string &msg, int options) {
     Debug::Print::message(msg.c_str(), options);
 }
 
-void Debug::Print::messageWithIdentity(const char* identity,
-                                       const char* msg,
+void Debug::Print::messageWithIdentity(const char *identity,
+                                       const char *msg,
                                        int options) {
     printf("<%s>", identity);
     message(msg, options);
 }
 
-void Debug::Print::messageWithIdentity(const std::string& identity,
-                                       const std::string& msg,
+void Debug::Print::messageWithIdentity(const std::string &identity,
+                                       const std::string &msg,
                                        int options) {
     messageWithIdentity(identity.c_str(), msg.c_str(), options);
 }
 
-void Debug::Print::bytes(byte* bytes, size_t size) {
+void Debug::Print::bytes(byte *bytes, size_t size) {
     printf("basical address: [%p]\n", bytes);
 
     for (size_t i = 1; i <= size; i++) {
-        printf("%3u ", (unsigned char)bytes[i - 1]);
+        printf("%3u ", (unsigned char) bytes[i - 1]);
         if (i % Debug::Print::ROW_OF_BYTES_LENGTH == 0) puts("");
     }
     if (size % Debug::Print::ROW_OF_BYTES_LENGTH != 0) puts("");

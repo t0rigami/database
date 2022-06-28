@@ -12,6 +12,8 @@
 
 class SqlExecutor {
 public:
+    SqlExecutor();
+
     /**
      * 简单 select 查询
      * @param tableName 表名
