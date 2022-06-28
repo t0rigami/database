@@ -1,5 +1,6 @@
 #include "DatabaseContext.h"
 #include "FileUtils.h"
+#include "Sort.h"
 
 void DatabaseContext::initConfiguration(std::string path) {
 #ifdef HDB_LOG_TRACE

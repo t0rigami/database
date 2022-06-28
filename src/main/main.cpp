@@ -24,7 +24,7 @@ int main(int argc, char const *argv[]) {
 
     DatabaseContext ctx;
 
-//    testInitContext(ctx);
+    testInitContext(ctx);
 
 //    testCreateStudentTable(ctx);
 
@@ -46,6 +46,8 @@ int main(int argc, char const *argv[]) {
 
     testQuickSort(ctx);
 
-
+//    testReadFixed(ctx);
+//    testSelectSimple(ctx);
+//    testExternalSort(ctx, true);
     return 0;
 }

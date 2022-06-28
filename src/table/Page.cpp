@@ -70,15 +70,15 @@ byte_array Page::serialize() const {
             offset -= tupleSize;
             _WRITE_BASIC_VALUES(offset);
             _WRITE_BASIC_VALUES(tupleSize);
-            //            printf("Item[%d]{offset=%ld, size=%ld}\n", offset,
+            //            printf("Item[%d]{_offset=%ld, size=%ld}\n", _offset,
             //            tupleSize);
         }
         // 将 bw 的 buffer _offset 移动到 _offset
         bw.setOffset(offset);
-        //        printf("Set Offset to %ld\n", offset);
+        //        printf("Set Offset to %ld\n", _offset);
         // TupleData s
         for (auto iter = tuples.rbegin(); iter != tuples.rend(); iter++) {
-            //            printf("Start tuples[%d] offset = %ld\n", j,
+            //            printf("Start tuples[%d] _offset = %ld\n", j,
             //            bw.getOffset());
             // 遍历 tuple
             const TupleData &tuple = *iter;
@@ -89,7 +89,7 @@ byte_array Page::serialize() const {
                 _WRITE_BASIC_VALUES(tuple.dataSize[i]);
                 _WRITE_REF_VALUES(tuple.data[i], tuple.dataSize[i]);
             }
-            //            printf("End tuples[%d] offset = %ld\n", j--,
+            //            printf("End tuples[%d] _offset = %ld\n", j--,
             //            bw.getOffset());
         }
     }
@@ -119,8 +119,8 @@ Page::Page(const byte_array &bytes, ColumnPtr *columns, int size) {
 
     for (int i = 0; i < count; i++) {
         auto item = (ItemPtr) (bytes.value + offset);
-        //        printf("Item=%d {offset=%zu, size=%zu}\n", offset,
-        //        item->offset, item->size);
+        //        printf("Item=%d {_offset=%zu, size=%zu}\n", _offset,
+        //        item->_offset, item->size);
         byte_array b{bytes.value + item->offset,
                      static_cast<size_t>(item->size)};
         BufferReader reader(b);
@@ -130,7 +130,7 @@ Page::Page(const byte_array &bytes, ColumnPtr *columns, int size) {
         TupleData::Builder builder;
 
         for (int j = 0; j < size; j++) {
-            //            printf("start offset=%ld\n", reader.getOffset());
+            //            printf("start _offset=%ld\n", reader.getOffset());
             switch (columns[j]->type) {
                 case INT: {
                     size_t dataSize = reader.readULong();
@@ -159,7 +159,7 @@ Page::Page(const byte_array &bytes, ColumnPtr *columns, int size) {
                 default:
                     Assert::isTrue(false, "not match this type!");
             }
-            //            printf("\nend offset=%ld\n", reader.getOffset());
+            //            printf("\nend _offset=%ld\n", reader.getOffset());
             //            puts("======>");
         }
 

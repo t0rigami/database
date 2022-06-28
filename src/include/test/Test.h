@@ -21,6 +21,7 @@
 #include "Sort.h"
 #include <algorithm>
 #include <random>
+#include "FixedReader.h"
 
 using namespace std;
 
@@ -245,8 +246,7 @@ namespace Test {
         });
     }
 
-    __attribute__((unused)) void testQuickSort(DatabaseContext &ctx) {
-        printf(">>>>>>>>>>>>> Start TestQuickSort <<<<<<<<<<<<<<<\n");
+    TablePtr _prepareData(DatabaseContext &ctx, bool insert = true, int count = 400) {
         TablePtr studentTable = Table::create(STUDENT_TABLE_NAME, STUDENT_TABLE_ID, {
                 {(char *) "name", VARCHAR, 50, 0, false},
                 {(char *) "age",  INT,     4,  1, false}
@@ -257,15 +257,20 @@ namespace Test {
                                   ".pg");
 
 
-        for (int i = 0; i < 400; i++) {
-            studentTable->insert(*TupleData::Builder()
-                    .addString("ZhangSan" + to_string(i))
-                    .addInt(i)
-                    .build());
+        if (insert) {
+            for (int i = 0; i < count; i++) {
+                studentTable->insert(*TupleData::Builder()
+                        .addString("ZhangSan" + to_string(i))
+                        .addInt(i)
+                        .build());
+            }
         }
+        return studentTable;
+    }
 
-        auto &tempPath = ctx.getDatabaseConfig().getTempPath();
-
+    __attribute__((unused)) void testQuickSort(DatabaseContext &ctx) {
+        printf(">>>>>>>>>>>>> Start TestQuickSort <<<<<<<<<<<<<<<\n");
+        TablePtr studentTable = _prepareData(ctx);
         PagePtr page = studentTable->getPage(0);
 
 
@@ -273,9 +278,9 @@ namespace Test {
 
         shuffle(record.begin(), record.end(), std::mt19937(std::random_device()()));
 
-//        for (const auto &item: record) {
-//            studentTable->formatPrint(item);
-//        }
+        for (const auto &item: record) {
+            studentTable->formatPrint(item);
+        }
 
         record = Sort::quickSort(record, [&](TupleData &a, TupleData &b) -> int {
             int ageA = studentTable->selectInt("age", a);
@@ -291,11 +296,40 @@ namespace Test {
     }
 
 
-    __attribute__((unused)) void testExternalSort(DatabaseContext &ctx) {
-        TablePtr studentTable = ctx.getTableByName(STUDENT_TABLE_NAME);
-        auto &tempPath = ctx.getDatabaseConfig().getTempPath();
-//        Sort::externalSort(studentTable, tempPath);
+    void testReadFixed(DatabaseContext &ctx) {
+        TablePtr studentTable = _prepareData(ctx, false);
+
+        FixedReader fr(512, "./tmp/0.tp");
+
+        while (fr.hasNext()) {
+            byte_array bytes = fr.readObjectByteArray();
+            TupleData tupleData = TupleData::fromBytes(bytes);
+            MallocUtils::retire(bytes);
+            studentTable->formatPrint(tupleData);
+        }
+        fr.close();
     }
 
+
+    __attribute__((unused)) void testExternalSort(DatabaseContext &ctx, bool insert = false) {
+        TablePtr studentTable = nullptr;
+        if (insert) {
+            studentTable = _prepareData(ctx, true, 1);
+        } else {
+            studentTable = _prepareData(ctx, true, 0);
+        }
+        auto &tempPath = ctx.getDatabaseConfig().getTempPath();
+        for (int i = 0; i < studentTable->getPageSize(); ++i) {
+            for (const auto &item: studentTable->getPage(i)->getTuples()) {
+                studentTable->formatPrint(item);
+            }
+        }
+        Sort::externalSort(studentTable, "./sorted.tp", ctx.getDatabaseConfig().getTempPath(),
+                           [&](TupleData &a, TupleData &b) -> int {
+                               int ageA = studentTable->selectInt("age", a);
+                               int ageB = studentTable->selectInt("age", b);
+                               return ageA - ageB;
+                           });
+    }
 
 }  // namespace Test

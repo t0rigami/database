@@ -4,11 +4,12 @@
 #include <vector>
 #include "types.h"
 #include "Column.h"
+#include "Serializable.h"
 
 struct TupleData;
 typedef TupleData *TupleDataPtr;
 
-struct TupleData {
+struct TupleData : public Serializable {
     class Builder {
     public:
         Builder &addString(const std::string &str);
@@ -34,6 +35,8 @@ struct TupleData {
 
     TupleData();
 
+    byte_array serialize() const override;
+
     void **data;
     /**
      * @brief 每个元组的数据大小
@@ -56,6 +59,10 @@ struct TupleData {
     void printFormat(const std::vector<ColumnPtr> &columns) const;
 
     void retireSpace() const;
+
+    static void listSave(const std::vector<TupleData> &tuples, const std::string &tempPath);
+
+    static TupleData fromBytes(byte_array bytes);
 };
 
 #endif

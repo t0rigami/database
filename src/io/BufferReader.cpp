@@ -23,7 +23,7 @@ BufferReader::BufferReader(byte_array bytes) : _buf(bytes.value), _size(bytes.si
 }
 
 byte_array BufferReader::read(size_t size) {
-    Assert::isTrue(_offset + size < _size, "out of range!");
+    Assert::isTrue(_offset + size <= _size, "out of range!");
     auto data = MallocUtils::mallocAndCopy(_buf + _offset, size);
     _offset += size;
     return {(byte *) data, size};

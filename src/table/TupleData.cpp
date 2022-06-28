@@ -1,6 +1,8 @@
 #include "TupleData.h"
 #include "Assert.h"
 #include "MallocUtils.h"
+#include "ByteWriter.h"
+#include "BufferReader.h"
 
 size_t TupleData::getTotalSize() const {
     size_t totalSize = sizeof(size_t) * length;
@@ -68,6 +70,37 @@ void TupleData::printFormat(const std::vector<ColumnPtr> &columns) const {
         }
     }
     printf(")\n");
+}
+
+void TupleData::listSave(const std::vector<TupleData> &tuples, const std::string &tempPath) {
+    ByteWriter bw(tempPath);
+    for (const auto &item: tuples) {
+        byte_array bytes = item.serialize();
+        bw.writeULong(bytes.size);
+        bw.write(bytes);
+    }
+    bw.close();
+}
+
+byte_array TupleData::serialize() const {
+    ByteWriter bw((int) getTotalSize() + sizeof(int));
+    bw.writeInt((int) length);
+    for (int i = 0; i < this->length; ++i) {
+        bw.writeULong(dataSize[i]);
+        bw.write((byte *) this->data[i], this->dataSize[i]);
+    }
+    return bw.getBuffer();
+}
+
+TupleData TupleData::fromBytes(byte_array bytes) {
+    BufferReader br(bytes);
+    int len = br.readInt();
+    TupleData tupleData(len);
+    for (int i = 0; i < len; ++i) {
+        tupleData.dataSize[i] = br.readULong();
+        tupleData.data[i] = br.read(tupleData.dataSize[i]).value;
+    }
+    return tupleData;
 }
 
 TupleData::TupleData() = default;
