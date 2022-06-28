@@ -6,7 +6,6 @@
 
 #define _BUFFER buffer
 #define _OFFSET offset
-#define _BYTE_SIZE sizeof(byte)
 
 #define _CHECK_BUF(_size) checkBuf(_size)
 
@@ -122,8 +121,6 @@ void ByteWriter::writeEnd() {
 
 void ByteWriter::write(const byte *bytes, size_t size) {
     _WRITE_REF_TYPE(bytes, size);
-//    printf("write _offset: %lu, _size: %lu, writeSize: %lu\n", offset, this->size,
-//           size);
 }
 
 void ByteWriter::write(const byte_array &bytes) {
@@ -169,7 +166,7 @@ void ByteWriter::open() {
 
 void ByteWriter::goPos(size_t pos) {
     flush();
-    Assert::isTrue(fseek(this->f, pos, 0) == 0, "can not seek pos");
+    Assert::isTrue(fseek(this->f, (int) pos, 0) == 0, "can not seek pos");
 }
 
 void ByteWriter::setOffset(size_t _offset) {

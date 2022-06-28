@@ -19,6 +19,7 @@ namespace StringUtils {
     bool isNumber(const std::string &numStr);
 
     int parseInt(const std::string &numStr);
-};  // namespace StringUtils
+
+} // namespace StringUtils
 
 #endif  // HDB_STRING_UTILS_H
