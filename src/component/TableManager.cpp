@@ -189,7 +189,7 @@ TablePtr TableManager::buildAttributeTable() {
 }
 
 TableManager::~TableManager() {
-    for (const auto &item: this->tables) item.second->saveAllPage();
+    // TODO:  for (const auto &item: this->tables) item.second->saveAllPage();
 }
 
 bool TableManager::exists(TablePtr table) {

@@ -19,6 +19,8 @@
 #include "Table.h"
 #include "TupleData.h"
 #include "Sort.h"
+#include <algorithm>
+#include <random>
 
 using namespace std;
 
@@ -229,34 +231,70 @@ namespace Test {
         bi.print();
     }
 
+    __attribute__((unused)) void testNumberQuickSort() {
+        vector<int> v;
+        for (int i = 0; i < 400; i++) v.push_back(i);
+        shuffle(v.begin(), v.end(), std::mt19937(std::random_device()()));
+
+        v = Sort::quickSort(v, [](int a, int b) {
+            return a - b;
+        });
+
+        for_each(v.begin(), v.end(), [](int a) {
+            cout << a << endl;
+        });
+    }
 
     __attribute__((unused)) void testQuickSort(DatabaseContext &ctx) {
         printf(">>>>>>>>>>>>> Start TestQuickSort <<<<<<<<<<<<<<<\n");
-        TablePtr studentTable = ctx.getTableByName(STUDENT_TABLE_NAME);
+        TablePtr studentTable = Table::create(STUDENT_TABLE_NAME, STUDENT_TABLE_ID, {
+                {(char *) "name", VARCHAR, 50, 0, false},
+                {(char *) "age",  INT,     4,  1, false}
+        });
 
-        if (studentTable == nullptr) {
-            printf("not found Student Table\n");
-            return;
+
+        studentTable->setPagePath(ctx.getDatabaseConfig().getPagePath() + "/" + std::to_string(STUDENT_TABLE_ID) +
+                                  ".pg");
+
+
+        for (int i = 0; i < 400; i++) {
+            studentTable->insert(*TupleData::Builder()
+                    .addString("ZhangSan" + to_string(i))
+                    .addInt(i)
+                    .build());
         }
 
         auto &tempPath = ctx.getDatabaseConfig().getTempPath();
 
         PagePtr page = studentTable->getPage(0);
 
-        auto &record = page->getTuples();
+
+        auto record = page->getTuples();
+
+        shuffle(record.begin(), record.end(), std::mt19937(std::random_device()()));
+
+//        for (const auto &item: record) {
+//            studentTable->formatPrint(item);
+//        }
+
+        record = Sort::quickSort(record, [&](TupleData &a, TupleData &b) -> int {
+            int ageA = studentTable->selectInt("age", a);
+            int ageB = studentTable->selectInt("age", b);
+            return ageA - ageB;
+        });
+
+        printf("<<<<<<<<<<<<<<<< Sort End >>>>>>>>>>>>>>>>\n");
 
         for (const auto &item: record) {
             studentTable->formatPrint(item);
         }
-
-//        Sort::quickSort(page, tempPath + "/page-sort.tmp");
     }
 
 
     __attribute__((unused)) void testExternalSort(DatabaseContext &ctx) {
         TablePtr studentTable = ctx.getTableByName(STUDENT_TABLE_NAME);
         auto &tempPath = ctx.getDatabaseConfig().getTempPath();
-        Sort::externalSort(studentTable, tempPath);
+//        Sort::externalSort(studentTable, tempPath);
     }
 
 

@@ -24,25 +24,28 @@ int main(int argc, char const *argv[]) {
 
     DatabaseContext ctx;
 
-    testInitContext(ctx);
+//    testInitContext(ctx);
 
-    testCreateStudentTable(ctx);
+//    testCreateStudentTable(ctx);
 
     //    testCreateTeacherTable(ctx);
 
     // testPrintAllTable(ctx);
 
-    testInsertToStudentTable(ctx);
+//    testInsertToStudentTable(ctx);
 
     // testInsertToTeacherTable(ctx);
 
-    testPrintStudentTable(ctx);
+//    testPrintStudentTable(ctx);
 
     // testPrintTeacherTable(ctx);
 
     // testBiOperator();
 
+//    testNumberQuickSort();
+
     testQuickSort(ctx);
+
 
     return 0;
 }
